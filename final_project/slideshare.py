@@ -3,6 +3,8 @@ from __future__ import print_function
 from apiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
+# import google api module
+import gdocs_api_calls as gac
 # scraping modules
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -18,9 +20,9 @@ from PIL import Image
 # import the custom markov chain model and corpus
 import custom_markov as cmarkov
 total_daesien = open('text_corpuses/totaldeasiean.txt', encoding='utf8').read()
-pig_work = open('text_corpuses/pigwork.txt', encoding='utf8').read()
+# pig_work = open('text_corpuses/pigwork.txt', encoding='utf8').read()
 corpus = total_daesien.split()
-corpus.extend(pig_work.split())
+# corpus.extend(pig_work.split())
 # import reaction modules
 from reactionrnn import reactionrnn
 react = reactionrnn()
@@ -32,7 +34,7 @@ with open('creds.json', 'r') as infile:
     creds = json.load(infile)
 
 # important variables
-n_slides = 11
+n_slides = 2
 chain_length = 32
 
 options = webdriver.ChromeOptions()
@@ -206,209 +208,205 @@ login()
 project_id = driver.current_url.split('/')[5]
 first_slide_id = driver.current_url.split('/')[6].split('.')[1]
 
-## Setup the Slides API
-SCOPES = 'https://www.googleapis.com/auth/presentations'
-store = file.Storage('credentials.json')
-creds = store.get()
-if not creds or creds.invalid:
-    flow = client.flow_from_clientsecrets('client_secret.json', SCOPES)
-    creds = tools.run_flow(flow, store)
-service = build('slides', 'v1', http=creds.authorize(Http()))
-
-# login to google slides and call the Slides API
-PRESENTATION_ID = project_id
-
-
-#functions for calling on the api
-def deck_populate(slide_ID, iteration):
-    requests = [
-        {
-            'createSlide': {
-                'objectId': slide_ID,
-                'insertionIndex': '1'
-            }
-        }
-    ]
-
-    body = {
-        'requests': requests
-    }
-
-    response = service.presentations().batchUpdate(presentationId=PRESENTATION_ID,
-                                                          body=body).execute()
-    create_slide_response = response.get('replies')[0].get('createSlide')
-    print('Created slide with ID: {0}'.format(create_slide_response.get('objectId')))
-
-    requests = [
-        {
-            "updatePageProperties": {
-                "objectId": slide_ID,
-                "pageProperties": {
-                    "pageBackgroundFill": {
-                        "stretchedPictureFill": {
-                        "contentUrl": slide_urls[len(slide_urls)-1-iteration]
-                        }
-                    }
-                },
-                "fields": "pageBackgroundFill"
-            }
-        }
-    ]
-
-    body = {
-        'requests': requests
-    }
-
-
-    response = service.presentations().batchUpdate(presentationId=PRESENTATION_ID,
-                                                          body=body).execute()
-
-def change_title():
-    requests = [
-        {
-            "insertText": {
-                "objectId": title_id,
-                "text": "WELCOME TO",
-                "insertionIndex": 0
-            }
-        }
-     ]
-
-    body = {
-            'requests': requests
-    }
-
-    response = service.presentations().batchUpdate(presentationId=PRESENTATION_ID,
-                                                          body=body).execute()
-
-    time.sleep(4)
-    requests = [
-        {
-            "insertText": {
-                "objectId": subtitle_id,
-                "text": "GOOD CONFERENCE TALK",
-                "insertionIndex": 0
-            }
-        }
-     ]
-
-    body = {
-            'requests': requests
-    }
-
-    response = service.presentations().batchUpdate(presentationId=PRESENTATION_ID,
-                                                          body=body).execute()
-
-def notes_update(the_slides, iteration):
-    notes_id = the_slides[iteration].get('slideProperties')['notesPage']['notesProperties']['speakerNotesObjectId']
-    print(notes_id)
-    requests = [
-        {
-            "insertText": {
-                "objectId": notes_id,
-                "text": speaker_notes[iteration-1]}
-        }
-     ]
-
-    body = {
-            'requests': requests
-    }
-    response = service.presentations().batchUpdate(presentationId=PRESENTATION_ID,
-                                                          body=body).execute()
-
-def last_slide(slide_ID):
-    requests = [
-        {
-            'createSlide': {
-                'objectId': slide_ID,
-                'insertionIndex': '12',
-                "slideLayoutReference": {
-                    "predefinedLayout": "SECTION_TITLE_AND_DESCRIPTION"
-        }
-            }
-        }
-    ]
-
-    body = {
-        'requests': requests
-    }
-
-    response = service.presentations().batchUpdate(presentationId=PRESENTATION_ID,
-                                                          body=body).execute()
-    create_slide_response = response.get('replies')[0].get('createSlide')
-    print('Created slide with ID: {0}'.format(create_slide_response.get('objectId')))
-
-
-
-def change_final_slide():
-    presentation = service.presentations().get(presentationId=PRESENTATION_ID).execute()
-    slides = presentation.get('slides')
-    last_title_id = slides[n_slides+1].get('pageElements')[0]['objectId']
-    last_subtitle_id = slides[n_slides+1].get('pageElements')[1]['objectId']
-    last_details_id = slides[n_slides+1].get('pageElements')[2]['objectId']
-    requests = [
-        {
-            "insertText": {
-                "objectId": last_title_id,
-                "text": "THANK YOU",
-                "insertionIndex": 0
-            }
-        }
-     ]
-
-    body = {
-            'requests': requests
-    }
-
-    response = service.presentations().batchUpdate(presentationId=PRESENTATION_ID,
-                                                          body=body).execute()
-    requests = [
-        {
-            "insertText": {
-                "objectId": last_details_id,
-                "text": "Twitter: @miamiworldwide\nGithub: miamiww\nwww.alden.website",
-                "insertionIndex": 0
-            }
-        }
-     ]
-    body = {
-            'requests': requests
-    }
-
-    response = service.presentations().batchUpdate(presentationId=PRESENTATION_ID,
-                                                          body=body).execute()
-
-
+# ## Setup the Slides API
+# SCOPES = 'https://www.googleapis.com/auth/presentations'
+# store = file.Storage('credentials.json')
+# creds = store.get()
+# if not creds or creds.invalid:
+#     flow = client.flow_from_clientsecrets('client_secret.json', SCOPES)
+#     creds = tools.run_flow(flow, store)
+# service = build('slides', 'v1', http=creds.authorize(Http()))
+#
+# # login to google slides and call the Slides API
+# PRESENTATION_ID = project_id
+#
+#
+# #functions for calling on the api
+# def deck_populate(slide_ID, iteration):
+#     requests = [
+#         {
+#             'createSlide': {
+#                 'objectId': slide_ID,
+#                 'insertionIndex': '1'
+#             }
+#         }
+#     ]
+#
+#     body = {
+#         'requests': requests
+#     }
+#
+#     response = service.presentations().batchUpdate(presentationId=PRESENTATION_ID,
+#                                                           body=body).execute()
+#     create_slide_response = response.get('replies')[0].get('createSlide')
+#     print('Created slide with ID: {0}'.format(create_slide_response.get('objectId')))
+#
+#     requests = [
+#         {
+#             "updatePageProperties": {
+#                 "objectId": slide_ID,
+#                 "pageProperties": {
+#                     "pageBackgroundFill": {
+#                         "stretchedPictureFill": {
+#                         "contentUrl": slide_urls[len(slide_urls)-1-iteration]
+#                         }
+#                     }
+#                 },
+#                 "fields": "pageBackgroundFill"
+#             }
+#         }
+#     ]
+#
+#     body = {
+#         'requests': requests
+#     }
+#
+#
+#     response = service.presentations().batchUpdate(presentationId=PRESENTATION_ID,
+#                                                           body=body).execute()
+#
+# def change_title():
+#     requests = [
+#         {
+#             "insertText": {
+#                 "objectId": title_id,
+#                 "text": "WELCOME TO",
+#                 "insertionIndex": 0
+#             }
+#         }
+#      ]
+#
+#     body = {
+#             'requests': requests
+#     }
+#
+#     response = service.presentations().batchUpdate(presentationId=PRESENTATION_ID,
+#                                                           body=body).execute()
+#
+#     time.sleep(4)
+#     requests = [
+#         {
+#             "insertText": {
+#                 "objectId": subtitle_id,
+#                 "text": "GOOD CONFERENCE TALK",
+#                 "insertionIndex": 0
+#             }
+#         }
+#      ]
+#
+#     body = {
+#             'requests': requests
+#     }
+#
+#     response = service.presentations().batchUpdate(presentationId=PRESENTATION_ID,
+#                                                           body=body).execute()
+#
+# def notes_update(the_slides, iteration):
+#     notes_id = the_slides[iteration].get('slideProperties')['notesPage']['notesProperties']['speakerNotesObjectId']
+#     print(notes_id)
+#     requests = [
+#         {
+#             "insertText": {
+#                 "objectId": notes_id,
+#                 "text": speaker_notes[iteration-1]}
+#         }
+#      ]
+#
+#     body = {
+#             'requests': requests
+#     }
+#     response = service.presentations().batchUpdate(presentationId=PRESENTATION_ID,
+#                                                           body=body).execute()
+#
+# def last_slide(slide_ID):
+#     requests = [
+#         {
+#             'createSlide': {
+#                 'objectId': slide_ID,
+#                 'insertionIndex': '12',
+#                 "slideLayoutReference": {
+#                     "predefinedLayout": "SECTION_TITLE_AND_DESCRIPTION"
+#         }
+#             }
+#         }
+#     ]
+#
+#     body = {
+#         'requests': requests
+#     }
+#
+#     response = service.presentations().batchUpdate(presentationId=PRESENTATION_ID,
+#                                                           body=body).execute()
+#     create_slide_response = response.get('replies')[0].get('createSlide')
+#     print('Created slide with ID: {0}'.format(create_slide_response.get('objectId')))
+#
+#
+#
+# def change_final_slide():
+#     presentation = service.presentations().get(presentationId=PRESENTATION_ID).execute()
+#     slides = presentation.get('slides')
+#     last_title_id = slides[n_slides+1].get('pageElements')[0]['objectId']
+#     last_subtitle_id = slides[n_slides+1].get('pageElements')[1]['objectId']
+#     last_details_id = slides[n_slides+1].get('pageElements')[2]['objectId']
+#     requests = [
+#         {
+#             "insertText": {
+#                 "objectId": last_title_id,
+#                 "text": "THANK YOU",
+#                 "insertionIndex": 0
+#             }
+#         }
+#      ]
+#
+#     body = {
+#             'requests': requests
+#     }
+#
+#     response = service.presentations().batchUpdate(presentationId=PRESENTATION_ID,
+#                                                           body=body).execute()
+#     requests = [
+#         {
+#             "insertText": {
+#                 "objectId": last_details_id,
+#                 "text": "Twitter: @miamiworldwide\nGithub: miamiww\nwww.alden.website",
+#                 "insertionIndex": 0
+#             }
+#         }
+#      ]
+#     body = {
+#             'requests': requests
+#     }
+#
+#     response = service.presentations().batchUpdate(presentationId=PRESENTATION_ID,
+#                                                           body=body).execute()
+#
+service = gac.api_setup(project_id)
 
 # call the api functions to create the slidedeck
 for i in range(0, len(slide_urls)):
     unique_id = random.randint(1000,10000000000000000000000)
     unique_id = str(unique_id)
-    deck_populate(unique_id,i)
+    gac.deck_populate(unique_id,i,project_id,service,slide_urls)
 
-presentation = service.presentations().get(presentationId=PRESENTATION_ID).execute()
+presentation = service.presentations().get(presentationId=project_id).execute()
 slides = presentation.get('slides')
-print(len(slides))
-title_id = slides[0].get('pageElements')[0]['objectId']
-subtitle_id = slides[0].get('pageElements')[1]['objectId']
 
 for i in range(len(slides)):
     if i == 0:
         pass
     else:
-        notes_update(slides, i)
+        gac.notes_update(slides, i,project_id,service,speaker_notes)
 
 unique_id = random.randint(1000,10000000000000000000000)
 unique_id = str(unique_id)
-last_slide(unique_id)
-change_final_slide()
+gac.last_slide(unique_id,project_id,service,n_slides)
+gac.change_final_slide(project_id,service,n_slides)
 
-change_title()
+gac.change_title(project_id,service)
 time.sleep(1)
 
 
 driver.find_element_by_css_selector("#punch-start-presentation-left").click()
-# music_driver.execute_script('''document.getElementsByTagName('video')[0].volume=0.1 ;''')
 
 volume_down = """
 return (function(v) {
@@ -423,14 +421,3 @@ for i in range(0,10):
 
 time.sleep(3)
 music_driver.quit()
-
-
-# driver.quit()
-
-
-
-    # clips = driver.find_elements_by_css_selector(".clipping-indicator")
-    # if len(clips)>0:
-    #     random.choice(clips).click()
-    #     time.sleep(4)
-    #     slide = driver.find_elements_by_css_selector(".slide_image")[1]
