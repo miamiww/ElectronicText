@@ -171,7 +171,7 @@ def change_final_slide(PRESENTATION_ID,service,n_slides):
         {
             "insertText": {
                 "objectId": last_details_id,
-                "text": "Twitter: @miamiworldwide\nGithub: miamiww\nwww.alden.website",
+                "text": "Twitter: @miamiworldwide\nGithub: miamiww\nEmail: rivendalejones@gmail.com\nwww.alden.website",
                 "insertionIndex": 0
             }
         }
