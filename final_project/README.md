@@ -1,5 +1,5 @@
-##WELCOME TO
-###the code for Welcome To, an automated conference talk
+## WELCOME TO
+### the code for Welcome To, an automated conference talk
 
 slideshare.py is the main script, which handles all of the webdriving and theatrical timing
 
