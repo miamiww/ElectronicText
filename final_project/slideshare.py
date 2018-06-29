@@ -29,7 +29,7 @@ with open('creds.json', 'r') as infile:
     creds = json.load(infile)
 
 # important variables
-n_slides = 11
+n_slides = 6
 chain_length = 32
 max_slide_clicks = 6
 
@@ -113,11 +113,11 @@ def login():
     driver.find_element_by_name('identifier').send_keys(creds['email_username'])
     time.sleep(1)
     driver.find_element_by_css_selector('#identifierNext').click()
-    time.sleep(1.2)
+    time.sleep(2)
     driver.find_element_by_name('password').send_keys(creds['email_password'])
     time.sleep(1)
     driver.find_element_by_name('password').send_keys(Keys.RETURN)
-    time.sleep(3)
+    time.sleep(4)
     driver.find_element_by_css_selector('.docs-homescreen-templates-templateview-preview').click()
     project_id = driver.current_url.split('/')[5]
     return project_id
